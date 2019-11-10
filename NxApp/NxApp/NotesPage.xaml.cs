@@ -4,36 +4,25 @@ using System.IO;
 using System.Linq;
 using Xamarin.Forms;
 using NxApp.Models;
+using NxApp.ModelDbContexts;
+using System.Threading.Tasks;
 
 namespace NxApp
 {
     public partial class NotesPage : ContentPage
     {
+        private readonly NoteDbContext.Helper<NoteDbContext> NoteHelper = new NoteDbContext.Helper<NoteDbContext>();
+
         public NotesPage()
         {
             InitializeComponent();
         }
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
 
-            var notes = new List<Note>();
-
-            var files = Directory.EnumerateFiles(App.FolderPath, "*.notes.txt");
-            foreach (var filename in files)
-            {
-                notes.Add(new Note
-                {
-                    Filename = filename,
-                    Text = File.ReadAllText(filename),
-                    Date = File.GetCreationTime(filename)
-                });
-            }
-
-            listView.ItemsSource = notes
-                .OrderBy(d => d.Date)
-                .ToList();
+            listView.ItemsSource = await NoteHelper.getNotesAsync();
         }
 
         async void OnNoteAddedClicked(object sender, EventArgs e)

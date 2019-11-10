@@ -2,11 +2,14 @@
 using System.IO;
 using Xamarin.Forms;
 using NxApp.Models;
+using NxApp.ModelDbContexts;
 
 namespace NxApp
 {
     public partial class NoteEntryPage : ContentPage
     {
+        private readonly NoteDbContext.Helper<NoteDbContext> NoteHelper = new NoteDbContext.Helper<NoteDbContext>();
+
         public NoteEntryPage()
         {
             InitializeComponent();
@@ -19,13 +22,14 @@ namespace NxApp
             if (string.IsNullOrWhiteSpace(note.Filename))
             {
                 // Save
-                var filename = Path.Combine(App.FolderPath, $"{Path.GetRandomFileName()}.notes.txt");
-                File.WriteAllText(filename, note.Text);
+                note.Filename = Path.GetRandomFileName();
+                note.Date = DateTime.Now;
+                await NoteHelper.AddOrUpdateNotesAsync(note, true);
             }
             else
             {
                 // Update
-                File.WriteAllText(note.Filename, note.Text);
+                await NoteHelper.AddOrUpdateNotesAsync(note, false);
             }
 
             await Navigation.PopAsync();
